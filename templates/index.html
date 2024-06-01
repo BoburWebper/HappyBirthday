@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Birthdays</title>
+</head>
+<body>
+
+    <h1>All Birthdays</h1>
+    <ul style="font-size: 20px;">
+        {% for item in birthdays_with_users %}
+        <li><b>Qoshgan User:</b> Ismi :{{item.user.firstname}} <br>
+            Telegram Idsi: {{ item.user.telegram_id }} </li>
+
+        <li><b>Tugilgan kun egasi:</b> {{ item.birthday.first_name }} {{ item.birthday.last_name }} <br>
+            <b>Tugilgan kuni:</b> {{item.birthday.birthday}}</li>
+        <li><b>Pul Tolanganmi:</b> {{item.birthday.payment_status}}</li>
+        <li><p><b>Images</b></p></li>
+        <div style="display: flex">
+            {% for image in item.images %}
+            <img src="{{ image.image.url }}" alt="{{ item.user.telegram_id }}" style="height: 350px; width: 350px;">
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </ul>
+
+</body>
+</html>
