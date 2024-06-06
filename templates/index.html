@@ -4,26 +4,216 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Today's Birthdays</title>
+    <style>
+        /* Default styles for the page */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f7ff; /* Slightly blue background color */
+            margin: 0;
+            padding: 0;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+
+        li {
+            margin-bottom: 20px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        li:hover {
+            transform: translateY(-5px);
+        }
+
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .image-item {
+            flex: 0 0 calc(33.333% - 20px);
+            max-width: calc(33.333% - 20px);
+        }
+
+        img {
+            max-width: calc(100% - 20px);
+            height: auto;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        img:hover {
+            transform: scale(1.1);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            display: block;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            max-height: 80%;
+            overflow: auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+        }
+
+        .modal-content img {
+            width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+
+        /* Close button */
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 20px;
+            color: #333;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-    <h1>All Birthdays</h1>
-    <ul style="font-size: 20px;">
-        {% for item in birthdays_with_users %}
-        <li><b>Qoshgan User:</b> Ismi :{{item.user.firstname}} <br>
-            Telegram Idsi: {{ item.user.telegram_id }} </li>
+<h1>All Birthdays</h1>
+<ul>
+    {% for item in birthdays_with_users %}
+    <li>
+        <b>Qoshgan User:</b> Ismi: {{ item.user.firstname }} <br>
+        Telegram Idsi: {{ item.user.telegram_id }}
 
-        <li><b>Tugilgan kun egasi:</b> {{ item.birthday.first_name }} {{ item.birthday.last_name }} <br>
-            <b>Tugilgan kuni:</b> {{item.birthday.birthday}}</li>
-        <li><b>Pul Tolanganmi:</b> {{item.birthday.payment_status}}</li>
-        <li><p><b>Images</b></p></li>
-        <div style="display: flex">
-            {% for image in item.images %}
-            <img src="{{ image.image.url }}" alt="{{ item.user.telegram_id }}" style="height: 350px; width: 350px;">
-            {% endfor %}
+        <ul>
+            <li>
+                <form id="updateStaffForm" action="{% url 'update_staff_username' item.birthday.birthday_id %}"
+                      method="POST">
+                    {% csrf_token %}
+                    <label for="staff_username">Choose a Staff:</label>
+
+                    <select id="staff_username" name="staff_username">
+                        {% for staff in staffs %}
+                        {% if staff.username == item.birthday.staff_username %}
+                        <option value="{{ staff.username }}" selected>{{ staff.username }}</option>
+                        {% else %}
+                        <option value="{{ staff.username }}">{{ staff.username }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+
+                    <br><br>
+                    <input type="submit" value="Submit">
+                </form>
+                <b>Staff Info</b>
+            </li>
+        </ul>
+        <b>Tugilgan kun egasi:</b> {{ item.birthday.first_name }} {{ item.birthday.last_name }} <br>
+        <b>Tugilgan kuni:</b> {{ item.birthday.birthday }}<br>
+        <b>Address: </b> {{item.birthday.address}}<br>
+        <b>Yoshi: </b>{{item.birthday.age}} yosh<br>
+        <b>Telefon raqami: </b>{{item.birthday.phone_number}}
+    </li>
+    <li>
+        <b>Kimlar tomonidan: </b>{{item.birthday.friends}}<br>
+        <b>Aynan kim tomonidan: </b> {{item.birthday.close_friends}}
+    </li>
+    <li><b>Tilaklari: </b>{{item.birthday.wishlist}}</li>
+    <li><b>Pul Tolanganmi:</b> {{ item.birthday.payment_status }}</li>
+    <li><p><b style="margin-left: 320px; font-size: 23px;">Images</b></p></li>
+    <div class="image-container">
+        {% for image in item.images %}
+        <div class="image-item">
+            <img src="{{ image.image.url }}" alt="{{ item.user.telegram_id }}"
+                 onclick="openModal('{{ image.image.url }}')">
         </div>
         {% endfor %}
-    </ul>
+    </div>
+    </li>
+    {% endfor %}
+</ul>
+
+
+<!-- Modal -->
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <img id="modalImage" src="" alt="">
+    </div>
+</div>
+
+<script>
+    function openModal(url) {
+        var modal = document.getElementById("myModal");
+        var modalImg = document.getElementById("modalImage");
+        modalImg.src = url;
+        modal.style.display = "block";
+    }
+
+    function closeModal() {
+        var modal = document.getElementById("myModal");
+        modal.style.display = "none";
+    }
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#updateStaffForm').submit(function (e) {
+            e.preventDefault(); // Prevent the default form submission
+            var form = $(this);
+            var url = form.attr('action');
+            var formData = form.serialize(); // Serialize form data
+
+            $.post(url, formData, function (response) {
+                if (response.success) {
+                    // Update the selected option text with the new staff username
+                    var newStaffUsername = $('#staff_username').val();
+                    $('#staff_username option:selected').text(newStaffUsername);
+                    // Optionally, display a success message or perform other actions
+                    alert('Staff username updated successfully');
+                } else {
+                    // Handle errors or display error messages
+                    alert('Failed to update staff username');
+                }
+            });
+        });
+    });
+</script>
+</script>
 
 </body>
 </html>

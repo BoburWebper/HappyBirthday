@@ -1,9 +1,10 @@
 from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, User
 
 
 # Create your models here.
 
-class Users(models.Model):
+class TelegramUsers(models.Model):
     user_id = models.AutoField(primary_key=True)
     telegram_id = models.TextField(unique=True, null=False)
     firstname = models.CharField(max_length=100, null=False)
@@ -18,9 +19,18 @@ class Users(models.Model):
         return self.telegram_id
 
 
+class StaffUser(models.Model):
+    username = models.CharField(max_length=150, unique=True)
+    password = models.CharField(max_length=128)
+
+    def __str__(self):
+        return self.username
+
+
 class UserBirthdays(models.Model):
     birthday_id = models.AutoField(primary_key=True)
-    telegram_id = models.ForeignKey(Users, to_field='telegram_id', on_delete=models.SET_NULL, null=True)
+    telegram_id = models.ForeignKey(TelegramUsers, to_field='telegram_id', on_delete=models.SET_NULL, null=True)
+    staff_username = models.ForeignKey(StaffUser, to_field='username', on_delete=models.SET_NULL, null=True, blank=True)
     first_name = models.CharField(max_length=100, null=False)
     last_name = models.CharField(max_length=100, null=False)
     address = models.CharField(max_length=300, null=False)
@@ -61,4 +71,3 @@ class Advertisement(models.Model):
 
 class Card(models.Model):
     cardInfo = models.TextField(null=True)
-
