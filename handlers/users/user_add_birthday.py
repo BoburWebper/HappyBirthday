@@ -18,7 +18,7 @@ from utils.cheack_phoneNum import is_valid_phone_number
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'birthday.settings')
 django.setup()
-from config.models import Users, UserBirthdays, UserBirthdayImages, Advertisement, Card
+from config.models import TelegramUsers, UserBirthdays, UserBirthdayImages, Advertisement, Card
 
 ADMINS = os.getenv("ADMINS")
 from loader import dp, bot
@@ -258,7 +258,7 @@ async def check_in(message: types.Message, state: FSMContext):
                     telegram_user_id = message.from_user.id
 
                     # Wrap the synchronous ORM operation in sync_to_async
-                    user, created = await sync_to_async(Users.objects.get_or_create)(telegram_id=telegram_user_id)
+                    user, created = await sync_to_async(TelegramUsers.objects.get_or_create)(telegram_id=telegram_user_id)
 
                     # Create UserBirthdays entry
                     user_birthday = await sync_to_async(UserBirthdays.objects.create)(
@@ -328,7 +328,7 @@ async def handle_photo_upload(message: types.Message, state: FSMContext):
         # Save the image to the Django model using sync_to_async
         telegram_user_id = message.from_user.id
 
-        user = await sync_to_async(Users.objects.get)(telegram_id=telegram_user_id)
+        user = await sync_to_async(TelegramUsers.objects.get)(telegram_id=telegram_user_id)
         birthday_id = data['birthday_id']
         user_birthday = await sync_to_async(UserBirthdays.objects.get)(birthday_id=birthday_id)
 
@@ -417,7 +417,7 @@ async def add_birthday(message: types.Message, state: FSMContext):
 async def advertising(message: types.Message):
     # Only proceed if the message is from an admin
     if message.from_user.id == int(ADMINS):
-        users = await sync_to_async(list)(Users.objects.all())
+        users = await sync_to_async(list)(TelegramUsers.objects.all())
         advertisements = await sync_to_async(list)(Advertisement.objects.all())
 
         for user in users:
