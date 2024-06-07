@@ -5,14 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Today's Birthdays</title>
     <style>
-        /* Default styles for the page */
         body {
             font-family: Arial, sans-serif;
-            background-color: #f0f7ff; /* Slightly blue background color */
+            background-color: #f0f7ff;
             margin: 0;
             padding: 0;
             color: #333;
             line-height: 1.6;
+        }
+
+        .image-item img {
+            max-width: 100%;
+            height: auto;
+            width: 300px; /* Adjust the width as needed */
+            height: 300px; /* Adjust the height as needed */
         }
 
         h1 {
@@ -22,52 +28,63 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
-        ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0 auto;
-            max-width: 800px;
-        }
-
-        li {
-            margin-bottom: 20px;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease-in-out;
-        }
-
-        li:hover {
-            transform: translateY(-5px);
-        }
-
-        .image-container {
+        .container {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
             justify-content: center;
+            gap: 20px;
+            padding: 20px;
         }
 
-        .image-item {
-            flex: 0 0 calc(33.333% - 20px);
-            max-width: calc(33.333% - 20px);
+        .box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            flex: 1 1 calc(33.333% - 40px);
+            box-sizing: border-box;
+            margin: 10px;
         }
 
-        img {
-            max-width: calc(100% - 20px);
-            height: auto;
+        .box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .box-icon {
+            max-width: 80px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .details {
+            color: #666;
+            text-align: left;
+            padding-left: 20px;
+            list-style: none;
+            padding: 0;
+        }
+
+        button {
+            background-color: #333;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
             border-radius: 5px;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: background-color 0.3s ease-in-out;
         }
 
-        img:hover {
-            transform: scale(1.1);
+        button:hover {
+            background-color: #555;
         }
 
-        /* Modal styles */
         .modal {
             display: none;
             position: fixed;
@@ -80,7 +97,6 @@
         }
 
         .modal-content {
-            display: block;
             position: absolute;
             left: 50%;
             top: 50%;
@@ -93,13 +109,21 @@
             border-radius: 5px;
         }
 
-        .modal-content img {
-            width: 100%;
-            height: auto;
+        .modal-content {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%; /* Adjust the width as needed */
+            max-width: 800px; /* Set a maximum width if necessary */
+            max-height: 80%;
+            overflow: auto;
+            background-color: #fff;
+            padding: 20px;
             border-radius: 5px;
         }
 
-        /* Close button */
+
         .close {
             position: absolute;
             top: 10px;
@@ -108,111 +132,152 @@
             color: #333;
             cursor: pointer;
         }
+
+        /* Media Queries for Responsiveness */
+        @media (max-width: 1200px) {
+            .box {
+                flex: 1 1 calc(50% - 40px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .box {
+                flex: 1 1 calc(100% - 40px);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .box {
+                padding: 15px;
+            }
+
+            .box-icon {
+                max-width: 60px;
+            }
+
+            button {
+                padding: 8px 16px;
+            }
+        }
     </style>
 </head>
 <body>
-
 <h1>All Birthdays</h1>
-<ul>
+<div class="container">
     {% for item in birthdays_with_users %}
-    <li>
-        <b>Qoshgan User:</b> Ismi: {{ item.user.firstname }} <br>
-        Telegram Idsi: {{ item.user.telegram_id }}
+    <div class="box">
+        <!--        <img src="pc.jpg" alt="User Image" class="box-icon">-->
+        <h2>{{ item.birthday.first_name }} {{ item.birthday.last_name }}</h2>
+        <ul class="details">
+            <li><b>Birthday: </b>{{ item.birthday.birthday }}</li>
+            <li><b>Payment Status: </b>{{ item.birthday.payment_status }}</li>
+            <li><b>Masul xodim: {{ item.birthday.staff_username }}</b></li>
 
-        <ul>
             <li>
-                <form id="updateStaffForm" action="{% url 'update_staff_username' item.birthday.birthday_id %}"
+                <form class="updateStaffForm" action="{% url 'update_staff_username' item.birthday.birthday_id %}"
                       method="POST">
                     {% csrf_token %}
                     <label for="staff_username">Choose a Staff:</label>
-
-                    <select id="staff_username" name="staff_username">
+                    <select class="staff_username" name="staff_username">
                         {% for staff in staffs %}
-                        {% if staff.username == item.birthday.staff_username %}
-                        <option value="{{ staff.username }}" selected>{{ staff.username }}</option>
-                        {% else %}
                         <option value="{{ staff.username }}">{{ staff.username }}</option>
-                        {% endif %}
                         {% endfor %}
                     </select>
 
                     <br><br>
                     <input type="submit" value="Submit">
                 </form>
-                <b>Staff Info</b>
             </li>
         </ul>
-        <b>Tugilgan kun egasi:</b> {{ item.birthday.first_name }} {{ item.birthday.last_name }} <br>
-        <b>Tugilgan kuni:</b> {{ item.birthday.birthday }}<br>
-        <b>Address: </b> {{item.birthday.address}}<br>
-        <b>Yoshi: </b>{{item.birthday.age}} yosh<br>
-        <b>Telefon raqami: </b>{{item.birthday.phone_number}}
-    </li>
-    <li>
-        <b>Kimlar tomonidan: </b>{{item.birthday.friends}}<br>
-        <b>Aynan kim tomonidan: </b> {{item.birthday.close_friends}}
-    </li>
-    <li><b>Tilaklari: </b>{{item.birthday.wishlist}}</li>
-    <li><b>Pul Tolanganmi:</b> {{ item.birthday.payment_status }}</li>
-    <li><p><b style="margin-left: 320px; font-size: 23px;">Images</b></p></li>
-    <div class="image-container">
-        {% for image in item.images %}
-        <div class="image-item">
-            <img src="{{ image.image.url }}" alt="{{ item.user.telegram_id }}"
-                 onclick="openModal('{{ image.image.url }}')">
-        </div>
-        {% endfor %}
+        <button onclick="openModal({{ forloop.counter0 }})">Read More</button>
     </div>
-    </li>
+
+    <!-- Modal -->
+    <div id="modal{{ forloop.counter0 }}" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal({{ forloop.counter0 }})">&times;</span>
+            <h2>Details</h2>
+            <p><b>Qoshgan User:</b> Ismi: {{ item.user.firstname }} <br>
+                Telegram Idsi: {{ item.user.telegram_id }}</p>
+            <p><b>Tugilgan kun egasi:</b> {{ item.birthday.first_name }} {{ item.birthday.last_name }} <br>
+                <b>Tugilgan kuni:</b> {{ item.birthday.birthday }}<br>
+                <b>Address: </b> {{ item.birthday.address }}<br>
+                <b>Yoshi: </b>{{ item.birthday.age }} yosh<br>
+                <b>Telefon raqami: </b>{{ item.birthday.phone_number }}</p>
+            <p><b>Kimlar tomonidan: </b>{{ item.birthday.friends }}<br>
+                <b>Aynan kim tomonidan: </b> {{ item.birthday.close_friends }}</p>
+            <p><b>Tilaklari: </b>{{ item.birthday.wishlist }}</p>
+            <p><b>Pul Tolanganmi:</b> {{ item.birthday.payment_status }}</p>
+            <p><b>Masul xodim: {{ item.birthday.staff_username }}</b></p>
+            <div class="image-container">
+                {% for image in item.images %}
+                <div class="image-item">
+                    <img src="{{ image.image.url }}" alt="{{ item.user.telegram_id }}"
+                         onclick="openImageModal('{{ image.image.url }}')">
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
 
-
-<!-- Modal -->
-<div id="myModal" class="modal">
+<!-- Image Modal -->
+<div id="imageModal" class="modal">
     <div class="modal-content">
-        <span class="close" onclick="closeModal()">&times;</span>
+        <span class="close" onclick="closeImageModal()">&times;</span>
         <img id="modalImage" src="" alt="">
     </div>
 </div>
 
 <script>
-    function openModal(url) {
-        var modal = document.getElementById("myModal");
+    function openModal(index) {
+        var modal = document.getElementById("modal" + index);
+        modal.style.display = "block";
+    }
+
+    function closeModal(index) {
+        var modal = document.getElementById("modal" + index);
+        modal.style.display = "none";
+    }
+
+    function openImageModal(url) {
+        var modal = document.getElementById("imageModal");
         var modalImg = document.getElementById("modalImage");
         modalImg.src = url;
         modal.style.display = "block";
     }
 
-    function closeModal() {
-        var modal = document.getElementById("myModal");
+    function closeImageModal() {
+        var modal = document.getElementById("imageModal");
         modal.style.display = "none";
     }
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function () {
-        $('#updateStaffForm').submit(function (e) {
-            e.preventDefault(); // Prevent the default form submission
-            var form = $(this);
-            var url = form.attr('action');
-            var formData = form.serialize(); // Serialize form data
+    document.addEventListener('DOMContentLoaded', function () {
+        var forms = document.querySelectorAll('.updateStaffForm');
+        forms.forEach(function (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                var url = form.action;
+                var formData = new FormData(form);
 
-            $.post(url, formData, function (response) {
-                if (response.success) {
-                    // Update the selected option text with the new staff username
-                    var newStaffUsername = $('#staff_username').val();
-                    $('#staff_username option:selected').text(newStaffUsername);
-                    // Optionally, display a success message or perform other actions
-                    alert('Staff username updated successfully');
-                } else {
-                    // Handle errors or display error messages
-                    alert('Failed to update staff username');
-                }
+                fetch(url, {
+                    method: 'POST',
+                    body: formData,
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            var newStaffUsername = form.querySelector('.staff_username').value;
+                            form.querySelector('.staff_username option:checked').textContent = newStaffUsername;
+                            alert('Staff username updated successfully');
+                        } else {
+                            alert('Failed to update staff username');
+                        }
+                    });
             });
         });
     });
-</script>
 </script>
 
 </body>
