@@ -46,7 +46,6 @@ def login_view(request):
         return render(request, 'login.html')
 
 
-@login_required
 def profile_view(request):
     # Retrieve staff user ID from session
     staff_user_id = request.session.get('staff_user_id')
